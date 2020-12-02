@@ -1,0 +1,1 @@
+packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html"},{"l":"main.java.hr.java.covidportal.iznimke"},{"l":"main.java.hr.java.covidportal.main"},{"l":"main.java.hr.java.covidportal.model"}];updateSearchResults();
