@@ -19,8 +19,8 @@ public class Zupanija extends ImenovaniEntitet {
      * @param brojStanovnika
      */
 
-    public Zupanija(String naziv, Integer brojStanovnika, Integer brojZarazenih) {
-        super(naziv);
+    public Zupanija(Long id, String naziv, Integer brojStanovnika, Integer brojZarazenih) {
+        super(id, naziv);
         this.brojStanovnika = brojStanovnika;
         this.brojZarazenih = brojZarazenih;
     }

@@ -20,8 +20,8 @@ public class Bolest extends ImenovaniEntitet {
      * @param simptomi
      */
 
-    public Bolest(String naziv, Set<Simptom> simptomi) {
-        super(naziv);
+    public Bolest(Long id, String naziv, Set<Simptom> simptomi) {
+        super(id, naziv);
         this.simptomi = simptomi;
     }
 

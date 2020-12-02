@@ -21,8 +21,8 @@ public class Simptom extends ImenovaniEntitet {
      * @param vrijednost
      */
 
-    public Simptom(String naziv, VrijednostSimptoma vrijednost) {
-        super(naziv);
+    public Simptom(Long id, String naziv, VrijednostSimptoma vrijednost) {
+        super(id, naziv);
         this.vrijednost = vrijednost;
     }
 

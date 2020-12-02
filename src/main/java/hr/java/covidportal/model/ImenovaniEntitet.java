@@ -8,6 +8,7 @@ package main.java.hr.java.covidportal.model;
  */
 
 public abstract class ImenovaniEntitet {
+    private Long id;
     private String naziv;
 
     /**
@@ -16,8 +17,29 @@ public abstract class ImenovaniEntitet {
      * @param naziv naziv imena elementa
      */
 
-    public ImenovaniEntitet(String naziv) {
+    public ImenovaniEntitet(Long id, String naziv) {
+        this.id = id;
         this.naziv = naziv;
+    }
+
+    /**
+     * Vraća id imenovanog entiteta
+     *
+     * @return id
+     */
+
+    public Long getId() {
+        return id;
+    }
+
+    /**
+     * Postavlja id imenovanog entiteta
+     *
+     * @param id nova vrijednost varijable <code>Long id</code>
+     */
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     /**
@@ -40,3 +62,4 @@ public abstract class ImenovaniEntitet {
         this.naziv = naziv;
     }
 }
+

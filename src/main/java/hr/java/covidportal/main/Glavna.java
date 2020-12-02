@@ -61,7 +61,7 @@ public class Glavna {
 
         unosOsoba(input, zupanije, bolesti, osobe);
 
-//        // Zadatak 1
+//
 //
 //        osobe.stream()
 //                .sorted(((Comparator
@@ -69,7 +69,7 @@ public class Glavna {
 //                        .thenComparing(Osoba::getKorisnickoIme))))
 //                .forEach(System.out::println);
 //
-//        // Zadatak 2
+//
 //
 //        System.out.println(osobe.stream()
 //                .min(Comparator
@@ -127,8 +127,6 @@ public class Glavna {
             .collect(Collectors.toList())
         );
 
-        // Zadatak 3
-
         // Sa lambda izrazima
 
         Instant start1 = Instant.now();
@@ -146,8 +144,6 @@ public class Glavna {
                 .stream()
                 .map(e -> e.getNaziv())
                 .forEach(System.out::println);
-
-        // Zadatak 4
 
         List<Virus> sortiraniVirusi2 = new ArrayList<>(klinika.getUneseniVirusi());
 
@@ -167,8 +163,6 @@ public class Glavna {
                 + " milisekundi, a bez lambdi traje "
                 + Duration.between(start2,end2)
                 + " milisekundi");
-
-        // Zadatak 5
 
         System.out.print("Unesite string za pretragu po prezimenu: ");
 
@@ -207,8 +201,6 @@ public class Glavna {
 //        }
 
 //        nekaOsoba.stream().map(el->el.getIme()).forEach(System.out::println);
-
-        // Zadatak 6
 
         bolesti
             .stream()
@@ -299,6 +291,7 @@ public class Glavna {
 
     private static void unosZupanija(Scanner input, SortedSet<Zupanija> zupanije) {
         String nazivZupanije;
+        Long id = null;
         int brojStanovnika = 0, brojZupanija = 0, brojZarazenih = 0;
         boolean ispravanUnos = true;
 
@@ -439,7 +432,7 @@ public class Glavna {
 
             } while (!ispravanUnos);
 
-            zupanije.add(new Zupanija(nazivZupanije, brojStanovnika, brojZarazenih));
+            zupanije.add(new Zupanija(id, nazivZupanije, brojStanovnika, brojZarazenih));
 
         }
     }
@@ -458,6 +451,7 @@ public class Glavna {
      */
 
     private static void unosSimptoma(Scanner input, Set<Simptom> simptomi) {
+        Long id = null;
         String nazivSimptoma;
         String vrijednostSimptoma;
         int brojSimptoma = 0;
@@ -547,7 +541,7 @@ public class Glavna {
 
             // Dodavanje Simptoma Ovisno o Vrijednosti
 
-            simptomi.add(new Simptom(nazivSimptoma,
+            simptomi.add(new Simptom(id, nazivSimptoma,
                     vrijednostSimptoma.equals(VrijednostSimptoma.RIJETKO.getVrijednost()) ?
                             VrijednostSimptoma.RIJETKO :
                             vrijednostSimptoma.equals(VrijednostSimptoma.SREDNJE.getVrijednost()) ?
@@ -588,6 +582,7 @@ public class Glavna {
      */
 
     private static void unosBolesti(Scanner input, Set<Simptom> simptomi, Set<Bolest> bolesti) {
+        Long id = null;
         String nazivBolestiIliVirusa;
         int brojOdabranihSimptoma = 0, odabraniSimptom;
         Set<Simptom> odabraniSimptomi;
@@ -873,7 +868,7 @@ public class Glavna {
 
             // Provjera da li je unos bolest ili virus i unos u polje bolesti
 
-            bolesti.add(bolestIliVirus == 1 ? new Bolest(nazivBolestiIliVirusa, odabraniSimptomi) : new Virus(nazivBolestiIliVirusa, odabraniSimptomi));
+            bolesti.add(bolestIliVirus == 1 ? new Bolest(id, nazivBolestiIliVirusa, odabraniSimptomi) : new Virus(id, nazivBolestiIliVirusa, odabraniSimptomi));
         }
     }
 

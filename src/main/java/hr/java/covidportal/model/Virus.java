@@ -19,8 +19,8 @@ public class Virus extends Bolest implements Zarazno {
      * @param simptomi
      */
 
-    public Virus(String naziv, Set<Simptom> simptomi) {
-        super(naziv, simptomi);
+    public Virus(Long id, String naziv, Set<Simptom> simptomi) {
+        super(id, naziv, simptomi);
     }
 
     /**
@@ -59,7 +59,7 @@ public class Virus extends Bolest implements Zarazno {
     // "Deep Copy" implementacija prelaska zaraze na drugu osobu
     @Override
     public void prelazakZarazeNaOsobu(Osoba osoba) {
-        osoba.setZarazenBolescu(new Virus(this.getNaziv(), this.getSimptomi()));
+        osoba.setZarazenBolescu(new Virus(this.getId(), this.getNaziv(), this.getSimptomi()));
     }
 
     @Override
