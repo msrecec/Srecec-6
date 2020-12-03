@@ -1,3 +1,6 @@
-3
-HERPES
 1
+COVID-19
+1,2,3
+2
+Gripa
+1,2

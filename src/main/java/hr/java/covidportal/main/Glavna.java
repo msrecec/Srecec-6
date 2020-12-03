@@ -19,6 +19,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Služi za unos Županija, Simptoma, Bolesti, Osoba i služi za ispis Osoba
@@ -63,7 +64,10 @@ public class Glavna {
 
         unosBolesti(input, simptomi, bolesti);
 
-//        bolesti.stream().filter(e -> e.getNaziv().compareTo("COVID-19") == 0).map(el -> el.getSimptomi().size()).forEach(System.out::println);
+//        bolesti.stream().filter(e -> e.getNaziv().compareTo("COVID-19") == 0)
+//                .flatMap(el -> Stream.of(el.getSimptomi()))
+//                .collect(Collectors.toList()).get(0)
+//                .stream().map(e->e.getNaziv()).forEach(System.out::println);
 
         // Unos osoba
 
@@ -564,7 +568,7 @@ public class Glavna {
 
                 // Provjera da li je unos bolest ili virus i unos u polje bolesti
 
-                bolesti.add(new Bolest(idVirusa, nazivVirusa, odabraniSimptomi));
+                bolesti.add(new Virus(idVirusa, nazivVirusa, odabraniSimptomi));
 
             }
 
@@ -672,430 +676,119 @@ public class Glavna {
      */
 
     private static void unosOsoba(Scanner input, SortedSet<Zupanija> zupanije, Set<Bolest> bolesti, List<Osoba> osobe) {
-        boolean ispravanUnos = true;
-        int odabranaZupanija = 0, brojOsoba = 0;
-        int odabranaBolest = 0;
-        int odabranaKontaktiranaOsoba = 0;
-        List<Osoba> odabraneUneseneKontaktiraneOsobe = new ArrayList<>();
-        Osoba odabranaUnesenaKontaktiranaOsoba = null;
-        int brojKontaktiranihOsoba = 0;
+        File unosOsoba = new File("dat/osobe.txt");
+        String procitanaLinija;
+        Long odabranaZupanija, odabranaUnesenaBolest;
         String ime, prezime;
         Integer starost = 0;
         Zupanija zupanija = null;
-        Bolest zarazenBolescu = null, odabranaUnesenaBolest = null;
-        List<Osoba> kontaktiraneOsobe = new ArrayList<>();
+        Bolest bolest = null;
 
-        // Unos broja osoba i validacija unosa
+        try (
+                FileReader filereader = new FileReader(unosOsoba);
+                BufferedReader reader = new BufferedReader(filereader);
+        ) {
 
-        do {
+            while ((procitanaLinija = reader.readLine()) != null) {
 
-            try {
+                List<Osoba> finalKontaktiraneOsobe = new ArrayList<>();
 
-                System.out.printf("Unesite broj osoba koje želite unijeti: ");
+                ime = procitanaLinija;
 
-                brojOsoba = input.nextInt();
+                logger.info("Unesen je ime osobe: " + ime);
 
-                input.nextLine();
+                prezime = reader.readLine();
 
-                if (brojOsoba < 0) {
+                logger.info("Unesen je ime osobe: " + prezime);
 
-                    System.out.println("Pogrešan unos! Molimo unesite pozitivan cijeli broj.");
+                starost = Integer.parseInt(reader.readLine());
 
-                    logger.error("Prilikom unosa broja osoba unesen je negativan broj.");
+                // odabir zupanije iz seta zupanija po indeksu
 
-                    ispravanUnos = false;
+                odabranaZupanija = Long.parseLong(reader.readLine());
+
+                Iterator<Zupanija> iteratorZupanija = zupanije.iterator();
+
+                for (int j = 0; j < zupanije.size() && iteratorZupanija.hasNext(); ++j) {
+                    zupanija = iteratorZupanija.next();
+                    if (zupanija.getId().compareTo(odabranaZupanija) == 0) {
+                        break;
+                    }
+                }
+
+                odabranaUnesenaBolest = Long.parseLong(reader.readLine());
+
+                Iterator<Bolest> iteratorBolesti = bolesti.iterator();
+
+                for (int j = 0; j < bolesti.size() && iteratorBolesti.hasNext(); ++j) {
+                    bolest = iteratorBolesti.next();
+                    if (bolest.getId().compareTo(odabranaUnesenaBolest) == 0) {
+                        break;
+                    }
+                }
+
+                if(osobe.size() > 0) {
+
+                    procitanaLinija = reader.readLine();
+
+                    if(procitanaLinija.compareTo("nema") != 0) {
+
+                        Arrays.stream(procitanaLinija.split(",")).forEach(el -> {
+
+                            finalKontaktiraneOsobe.add(osobe.get(Integer.parseInt(el)-1));
+
+                        });
+
+                        osobe.add(new Osoba.Builder(ime).prezime(prezime).starost(starost).zupanija(zupanija)
+                                .zarazenBolescu(bolest).kontaktiraneOsobe(finalKontaktiraneOsobe).build());
+
+                    } else {
+                        osobe.add(new Osoba.Builder(ime).prezime(prezime).starost(starost).zupanija(zupanija)
+                                .zarazenBolescu(bolest).build());
+                    }
 
                 } else {
-
-                    logger.info("Unesen je broj osoba: " + Integer.toString(brojOsoba));
-
-                    ispravanUnos = true;
-
+                    osobe.add(new Osoba.Builder(ime).prezime(prezime).starost(starost).zupanija(zupanija)
+                            .zarazenBolescu(bolest).build());
                 }
 
-            } catch (InputMismatchException ex) {
-
-                logger.error("Prilikom unosa broja osoba je došlo do pogreške. Unesen je String koji se ne može parsirati!", ex);
-
-                System.out.println("Došlo je do pogreške kod unosa brojčane vrijednosti! Molimo ponovite unos.");
-
-                input.nextLine();
-
-                ispravanUnos = false;
 
             }
 
-        } while (!ispravanUnos);
+        } catch (IOException ex) {
 
-        for (int i = 0; i < brojOsoba; ++i) {
+            logger.error("Ne mogu pronaci datoteku.", ex);
 
-            // Unos imena
+        } catch (NumberFormatException  exe) {
 
-            System.out.printf("Unesite ime %d. osobe: ", i + 1);
-            ime = input.nextLine();
+            logger.error("Greska prilikom citanja broja!", exe);
 
-            // Unos prezimena
-
-            System.out.printf("Unesite prezime %d. osobe: ", i + 1);
-            prezime = input.nextLine();
-
-            // Unos starosti i validacija unosa
-
-            do {
-
-                try {
-
-                    System.out.printf("Unesite starost osobe: ");
-
-                    starost = input.nextInt();
-
-                    input.nextLine();
-
-                    if (starost < 0) {
-                        System.out.println("Unesena vrijednost ne smije biti negativan broj! Molimo ponovite unos.");
-
-                        logger.error("Prilikom unosa starosti osobe, unesen je negativan broj: " + Integer.toString(starost));
-
-                        ispravanUnos = false;
-
-                    } else {
-
-                        logger.info("Unesena je starost osobe: " + Integer.toString(starost));
-
-                        ispravanUnos = true;
-
-                    }
-
-                } catch (InputMismatchException ex) {
-
-                    logger.error("Prilikom unosa brojčane vrijednosti kod starosti osobe je došlo do pogreške. Unesen je String koji se ne može parsirati!", ex);
-
-                    System.out.println("Došlo je do pogreške kod unosa brojčane vrijednosti! Molimo ponovite unos.");
-
-                    input.nextLine();
-
-                    ispravanUnos = false;
-                }
-
-            } while (!ispravanUnos);
-
-
-            // Unos zupanije prebivalista i validacija
-
-            do {
-
-                try {
-
-                    System.out.printf("Unesite županiju prebivališta osobe:%n");
-
-                    // Ispis zupanija
-
-                    Iterator<Zupanija> iteratorZupanija = zupanije.iterator();
-
-                    for (int j = 0; j < zupanije.size(); ++j) {
-                        System.out.printf("%d. %s%n", j + 1, iteratorZupanija.next().getNaziv());
-                    }
-
-                    System.out.print("Odabir: ");
-
-                    odabranaZupanija = input.nextInt();
-
-                    input.nextLine();
-
-                    // Provjera ispravnosti unosa Odabrane Zupanije
-
-                    if (odabranaZupanija < 1 || odabranaZupanija > zupanije.size()) {
-
-                        System.out.println("Pogresan unos županije!");
-
-                        logger.error("Prilikom unosa županije osobe, unesen je broj izvan prethodno navedenog raspona: "
-                                + Integer.toString(odabranaZupanija));
-
-                        ispravanUnos = false;
-
-                    } else {
-
-                        logger.info("Unesen je odabir županije: " + Integer.toString(odabranaZupanija));
-
-                        ispravanUnos = true;
-
-                    }
-
-                } catch (InputMismatchException ex) {
-
-                    logger.error("Prilikom unosa brojčane vrijednosti kod biranja županije osobe je došlo do pogreške. Unesen je String koji se ne može parsirati!", ex);
-
-                    System.out.println("Došlo je do pogreške kod unosa brojčane vrijednosti! Molimo ponovite unos.");
-
-                    input.nextLine();
-
-                    ispravanUnos = false;
-                }
-
-
-            } while (!ispravanUnos);
-
-            // odabir zupanije iz seta zupanija po indeksu
-
-            Iterator<Zupanija> iteratorZupanija = zupanije.iterator();
-
-            for (int j = 0; j < zupanije.size() && iteratorZupanija.hasNext(); ++j) {
-                zupanija = iteratorZupanija.next();
-                if (j == (odabranaZupanija - 1)) {
-                    break;
-                }
-            }
-
-            // Unos bolesti osobe
-
-            do {
-
-                try {
-
-                    System.out.println("Unesite bolest ili virus osobe:");
-
-                    // ispis bolesti
-
-                    Iterator<Bolest> iteratorBolesti = bolesti.iterator();
-
-                    for (int j = 0; j < bolesti.size() && iteratorBolesti.hasNext(); ++j) {
-                        System.out.printf("%d. %s%n", j + 1, iteratorBolesti.next().getNaziv());
-                    }
-
-                    System.out.print("Odabir: ");
-
-                    odabranaBolest = input.nextInt();
-
-                    input.nextLine();
-
-                    // Provjera ispravnosti unosa Odabrane Bolesti Osobe
-
-                    if (odabranaBolest < 1 || odabranaBolest > bolesti.size()) {
-
-                        System.out.println("Pogrešan unos bolesti/virusa!");
-
-                        logger.error("Prilikom unosa bolesti/virusa osobe, unesen je broj izvan prethodno navedenog raspona: "
-                                + Integer.toString(odabranaBolest));
-
-                        ispravanUnos = false;
-
-                    } else {
-
-                        // logiranje bolesti u ovisnosti o odabranoj bolesti
-
-                        iteratorBolesti = bolesti.iterator();
-
-                        for (int l = 0; l < bolesti.size() && iteratorBolesti.hasNext(); ++l) {
-                            if (l == (odabranaBolest - 1)) {
-                                logger.info(((iteratorBolesti.next() instanceof Virus) ? "Unesen je virus: " : "Unesena je bolest: ")
-                                        + Integer.toString(odabranaBolest));
-                            } else {
-                                iteratorBolesti.next();
-                            }
-                        }
-
-                        ispravanUnos = true;
-
-                    }
-
-                } catch (InputMismatchException ex) {
-
-                    logger.error("Prilikom unosa brojčane vrijednosti kod biranja bolesti/virusa osobe je došlo do pogreške. Unesen je String koji se ne može parsirati!", ex);
-
-                    System.out.println("Došlo je do pogreške kod unosa brojčane vrijednosti! Molimo ponovite unos.");
-
-                    input.nextLine();
-
-                    ispravanUnos = false;
-
-                }
-
-            } while (!ispravanUnos);
-
-            // spremanje odabrane bolesti po indeksu
-
-            Iterator<Bolest> iteratorBolesti = bolesti.iterator();
-
-            for (int j = 0; j < bolesti.size() && iteratorBolesti.hasNext(); ++j) {
-                odabranaUnesenaBolest = iteratorBolesti.next();
-                if (j == (odabranaBolest - 1)) {
-                    zarazenBolescu = odabranaUnesenaBolest;
-                    break;
-                }
-            }
-
-
-            // Provjera osoba s kojim je osoba usla u kontakt u slucaju da nije prva osoba - prva se ne gleda
-
-            if (osobe.size() > 0) {
-
-                // Unos broja kontaktiranih osoba i validacija
-
-                do {
-
-                    try {
-
-                        System.out.println("Unesite broj osoba koje su bile u kontaktu s tom osobom:");
-
-                        brojKontaktiranihOsoba = input.nextInt();
-
-                        input.nextLine();
-
-                        // Provjera unosa broja kontaktiranih osoba
-
-                        if (brojKontaktiranihOsoba > i || brojKontaktiranihOsoba < 0) {
-
-                            System.out.println("Greska u unosu broja kontaktiranih osoba. Broj trenutno unesenih osoba je: " + Integer.toString(i));
-
-                            logger.error("Prilikom unosa broja kontaktiranih osoba, unesen je broj izvan raspona unesenog broja osoba: "
-                                    + Integer.toString(brojKontaktiranihOsoba));
-
-                            ispravanUnos = false;
-
-                        } else {
-
-                            ispravanUnos = true;
-
-                            logger.info("Unesen je broj kontaktiranih osoba: " + Integer.toString(brojKontaktiranihOsoba));
-
-                        }
-
-                    } catch (InputMismatchException ex) {
-
-                        logger.error("Prilikom unosa brojčane vrijednosti kod biranja broja kontaktiranih osoba je došlo do pogreške. Unesen je String koji se ne može parsirati!", ex);
-
-                        System.out.println("Došlo je do pogreške kod unosa brojčane vrijednosti! Molimo ponovite unos.");
-
-                        input.nextLine();
-
-                        ispravanUnos = false;
-
-                    }
-
-                } while (!ispravanUnos);
-
-                if (brojKontaktiranihOsoba > 0) {
-
-                    // Unos i validacija Odabranih Kontaktiranih Osoba
-
-                    odabraneUneseneKontaktiraneOsobe = new ArrayList<>();
-
-                    for (int j = 0; j < brojKontaktiranihOsoba; ++j) {
-
-                        do {
-
-                            // Unos Odabrane Kontaktirane Osobe
-
-                            try {
-
-                                System.out.printf("Odaberite %d. osobu: %n", j + 1);
-
-                                Iterator<Osoba> iteratorOsoba = osobe.iterator();
-                                Osoba osoba;
-
-                                for (int k = 0; k < i && iteratorOsoba.hasNext(); ++k) {
-                                    osoba = iteratorOsoba.next();
-                                    System.out.printf("%d. %s %s%n", k + 1, osoba.getIme(), osoba.getPrezime());
-                                }
-
-                                System.out.print("Odabir: ");
-
-                                odabranaKontaktiranaOsoba = input.nextInt();
-
-                                input.nextLine();
-
-                                // Provjera unosa Odabrane Kontaktirane Osobe
-
-                                if (odabranaKontaktiranaOsoba < 1 || odabranaKontaktiranaOsoba > i) {
-
-                                    System.out.println("Greška pri unosu odabrane kontaktirane osobe");
-
-                                    logger.error("Prilikom unosa odabira kontaktirane osobe, unesen je broj izvan raspona unesenog broja osoba: "
-                                            + Integer.toString(odabranaKontaktiranaOsoba));
-
-                                    ispravanUnos = false;
-
-                                } else {
-
-                                    // Provjera Duplikata Kontaktiranih Osoba i obrada greške
-
-                                    odabranaUnesenaKontaktiranaOsoba = osobe.get(odabranaKontaktiranaOsoba - 1);
-
-                                    provjeraDuplikataKontaktiranihOsoba(odabranaUnesenaKontaktiranaOsoba, odabraneUneseneKontaktiraneOsobe);
-
-                                    ispravanUnos = true;
-
-                                    logger.info("Unesen je odabir kontaktirane osobe: " + Integer.toString(odabranaKontaktiranaOsoba));
-
-                                    odabraneUneseneKontaktiraneOsobe.add(odabranaUnesenaKontaktiranaOsoba);
-
-
-                                }
-
-                            } catch (InputMismatchException e) {
-
-                                logger.error("Prilikom unosa brojčane vrijednosti kod unosa odabrane kontaktirane osobe je došlo do pogreške. Unesen je String koji se ne može parsirati!", e);
-
-                                System.out.println("Došlo je do pogreške kod unosa brojčane vrijednosti! Molimo ponovite unos.");
-
-                                input.nextLine();
-
-                                ispravanUnos = false;
-
-                            } catch (DuplikatKontaktiraneOsobe ex) {
-
-                                logger.error(ex.getMessage(), ex);
-
-                                ispravanUnos = false;
-
-                            }
-
-                        } while (!ispravanUnos);
-
-                    }
-
-                    // Spremanje Odabranih Kontaktiranih Osoba u polje Kontaktiranih Osoba
-
-                    kontaktiraneOsobe = odabraneUneseneKontaktiraneOsobe;
-
-                }
-            }
-
-            // Spremanje osoba u polje osoba
-
-            if (i == 0) {
-                osobe.add(new Osoba.Builder(ime).prezime(prezime).starost(starost).zupanija(zupanija)
-                        .zarazenBolescu(zarazenBolescu).build());
-            } else {
-                osobe.add(new Osoba.Builder(ime).prezime(prezime).starost(starost).zupanija(zupanija)
-                        .zarazenBolescu(zarazenBolescu).kontaktiraneOsobe(kontaktiraneOsobe).build());
-            }
         }
     }
 
-    /**
-     * Provjerava postojanost odabrane kontaktirane osobe <code>int odabranaKontaktiranaOsoba</code> u polju
-     * <code>int[] odabraneUneseneKontaktiraneOsobe</code> i provjerava duplikate
-     * ako postoji duplikat baca iznimku <code>throw new DuplikatKontaktiraneOsobe("Prilikom unosa odabira kontaktirane osobe, unesena je prethodno odabrana osoba (duplikat): "
-     * + Integer.toString(odabranaKontaktiranaOsoba));</code>
-     *
-     * @param odabranaUnesenaKontaktiranaOsoba unesena odabrana kontaktirana osoba
-     * @param odabraneUneseneKontaktiraneOsobe polje prethodno odabranih kontaktiranih osoba
-     * @throws DuplikatKontaktiraneOsobe iznimka koja se baca u slučaju kada su uneseni duplikati
-     */
-
-    private static void provjeraDuplikataKontaktiranihOsoba(Osoba odabranaUnesenaKontaktiranaOsoba, List<Osoba> odabraneUneseneKontaktiraneOsobe) throws DuplikatKontaktiraneOsobe {
-
-        // (Provjera duplikata) Provjera postojanosti Odabrane Kontaktirane Osobe u prethodno Odabranim Kontaktiranim Osobama
-
-        if (odabraneUneseneKontaktiraneOsobe.contains(odabranaUnesenaKontaktiranaOsoba)) {
-
-            System.out.println("Osoba je već odabrana, molimo ponovno unesite!");
-
-            throw new DuplikatKontaktiraneOsobe("Prilikom unosa odabira kontaktirane osobe, unesena je prethodno odabrana osoba (duplikat)");
-
-        }
-    }
+//    /**
+//     * Provjerava postojanost odabrane kontaktirane osobe <code>int odabranaKontaktiranaOsoba</code> u polju
+//     * <code>int[] odabraneUneseneKontaktiraneOsobe</code> i provjerava duplikate
+//     * ako postoji duplikat baca iznimku <code>throw new DuplikatKontaktiraneOsobe("Prilikom unosa odabira kontaktirane osobe, unesena je prethodno odabrana osoba (duplikat): "
+//     * + Integer.toString(odabranaKontaktiranaOsoba));</code>
+//     *
+//     * @param odabranaUnesenaKontaktiranaOsoba unesena odabrana kontaktirana osoba
+//     * @param odabraneUneseneKontaktiraneOsobe polje prethodno odabranih kontaktiranih osoba
+//     * @throws DuplikatKontaktiraneOsobe iznimka koja se baca u slučaju kada su uneseni duplikati
+//     */
+//
+//    private static void provjeraDuplikataKontaktiranihOsoba(Osoba odabranaUnesenaKontaktiranaOsoba, List<Osoba> odabraneUneseneKontaktiraneOsobe) throws DuplikatKontaktiraneOsobe {
+//
+//        // (Provjera duplikata) Provjera postojanosti Odabrane Kontaktirane Osobe u prethodno Odabranim Kontaktiranim Osobama
+//
+//        if (odabraneUneseneKontaktiraneOsobe.contains(odabranaUnesenaKontaktiranaOsoba)) {
+//
+//            System.out.println("Osoba je već odabrana, molimo ponovno unesite!");
+//
+//            throw new DuplikatKontaktiraneOsobe("Prilikom unosa odabira kontaktirane osobe, unesena je prethodno odabrana osoba (duplikat)");
+//
+//        }
+//    }
 }
 
 
