@@ -1,6 +1,9 @@
-1
+2
 COVID-19
 1,2,3
-2
+3
 Gripa
 1,2
+4
+KONJUKTIVITIS
+2

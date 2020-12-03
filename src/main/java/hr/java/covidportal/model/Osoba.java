@@ -25,6 +25,7 @@ public class Osoba implements Serializable {
      * @version 1.0
      */
     public static class Builder {
+        private Long id;
         private String ime, prezime;
         private Integer starost;
         private Zupanija zupanija;
@@ -34,11 +35,23 @@ public class Osoba implements Serializable {
         /**
          * Služi za instanciranje objekta klase <code>class Builder</code>
          *
-         * @param ime ime osobe
+         * @param id id osobe
          */
 
-        public Builder(String ime) {
+        public Builder(Long id) {
+            this.id = id;
+        }
+
+        /**
+         * Služi za instanciranje objekta klase <code>class Builder</code>
+         * Vraća samu instancu
+         *
+         * @param ime prezime osobe
+         * @return
+         */
+        public Builder ime(String ime) {
             this.ime = ime;
+            return this;
         }
 
         /**
@@ -114,6 +127,7 @@ public class Osoba implements Serializable {
 
         public Osoba build() {
             Osoba osoba = new Osoba();
+            osoba.id = this.id;
             osoba.ime = this.ime;
             osoba.prezime = this.prezime;
             osoba.starost = this.starost;
@@ -138,6 +152,7 @@ public class Osoba implements Serializable {
 
     // Class Fields
 
+    private Long id;
     private String ime, prezime;
     private Integer starost;
     private Zupanija zupanija;
@@ -197,7 +212,8 @@ public class Osoba implements Serializable {
         if (this == o) return true;
         if (!(o instanceof Osoba)) return false;
         Osoba osoba = (Osoba) o;
-        return Objects.equals(getIme(), osoba.getIme()) &&
+        return Objects.equals(getId(), osoba.getId()) &&
+                Objects.equals(getIme(), osoba.getIme()) &&
                 Objects.equals(getPrezime(), osoba.getPrezime()) &&
                 Objects.equals(getStarost(), osoba.getStarost()) &&
                 Objects.equals(getZupanija(), osoba.getZupanija()) &&
@@ -213,11 +229,31 @@ public class Osoba implements Serializable {
 
     @Override
     public int hashCode() {
-        return Objects.hash(getIme(), getPrezime(), getStarost(), getZupanija(), getZarazenBolescu(), getKontaktiraneOsobe());
+        return Objects.hash(getId(), getIme(), getPrezime(), getStarost(), getZupanija(), getZarazenBolescu(), getKontaktiraneOsobe());
     }
 
 
 
+
+    /**
+     * Vraća id osobe
+     *
+     * @return id
+     */
+
+    public Long getId() {
+        return id;
+    }
+
+    /**
+     * Vraća id osobe
+     *
+     * @return id
+     */
+
+    public void setId(Long id) {
+        this.id = id;
+    }
 
     /**
      * Vraća ime osobe

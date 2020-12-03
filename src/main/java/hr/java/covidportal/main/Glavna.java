@@ -332,6 +332,8 @@ public class Glavna {
         String nazivZupanije;
         int brojStanovnika = 0, brojZarazenih = 0;
 
+        System.out.println("Učitavanje podataka o županijama...");
+
         // Unos id županija
 
         try (
@@ -391,6 +393,8 @@ public class Glavna {
         Long idSimptoma;
         String nazivSimptoma;
         String vrijednostSimptoma;
+
+        System.out.println("Učitavanje podataka o simptomima...");
 
         // Unos broja simptoma i validacija unosa
 
@@ -473,7 +477,7 @@ public class Glavna {
         Long idBolesti, idVirusa;
         String nazivBolesti, nazivVirusa;
 
-
+        System.out.println("Učitavanje podataka o bolestima...");
 
         try (
                 FileReader filereader = new FileReader(unosBolesti);
@@ -541,6 +545,8 @@ public class Glavna {
             logger.error(exc.getMessage(), exc);
 
         }
+
+        System.out.println("Učitavanje podataka o virusima...");
 
 
         try (
@@ -702,11 +708,13 @@ public class Glavna {
     private static void unosOsoba(Scanner input, SortedSet<Zupanija> zupanije, Set<Bolest> bolesti, List<Osoba> osobe) {
         File unosOsoba = new File("dat/osobe.txt");
         String procitanaLinija;
-        Long odabranaZupanija, odabranaUnesenaBolest;
+        Long odabranaZupanija, odabranaUnesenaBolest, idOsobe;
         String ime, prezime;
         Integer starost = 0;
         Zupanija zupanija = null;
         Bolest bolest = null;
+
+        System.out.println("Učitavanje osoba...");
 
         try (
                 FileReader filereader = new FileReader(unosOsoba);
@@ -717,7 +725,11 @@ public class Glavna {
 
                 List<Osoba> finalKontaktiraneOsobe = new ArrayList<>();
 
-                ime = procitanaLinija;
+                idOsobe = Long.parseLong(procitanaLinija);
+
+                logger.info("Unesen je id osobe: " + idOsobe);
+
+                ime = reader.readLine();
 
                 logger.info("Unesen je ime osobe: " + ime);
 
@@ -759,20 +771,24 @@ public class Glavna {
 
                         Arrays.stream(procitanaLinija.split(",")).forEach(el -> {
 
-                            finalKontaktiraneOsobe.add(osobe.get(Integer.parseInt(el)-1));
+                            for(Osoba o : osobe) {
+                                if(o.getId().compareTo(Long.parseLong(el)) == 0) {
+                                    finalKontaktiraneOsobe.add(o);
+                                }
+                            }
 
                         });
 
-                        osobe.add(new Osoba.Builder(ime).prezime(prezime).starost(starost).zupanija(zupanija)
+                        osobe.add(new Osoba.Builder(idOsobe).ime(ime).prezime(prezime).starost(starost).zupanija(zupanija)
                                 .zarazenBolescu(bolest).kontaktiraneOsobe(finalKontaktiraneOsobe).build());
 
                     } else {
-                        osobe.add(new Osoba.Builder(ime).prezime(prezime).starost(starost).zupanija(zupanija)
+                        osobe.add(new Osoba.Builder(idOsobe).ime(ime).prezime(prezime).starost(starost).zupanija(zupanija)
                                 .zarazenBolescu(bolest).build());
                     }
 
                 } else {
-                    osobe.add(new Osoba.Builder(ime).prezime(prezime).starost(starost).zupanija(zupanija)
+                    osobe.add(new Osoba.Builder(idOsobe).ime(ime).prezime(prezime).starost(starost).zupanija(zupanija)
                             .zarazenBolescu(bolest).build());
                 }
 
