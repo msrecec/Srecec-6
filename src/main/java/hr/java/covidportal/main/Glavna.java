@@ -16,6 +16,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 /**
@@ -46,6 +47,55 @@ public class Glavna {
         Set<Bolest> bolesti = new HashSet<>();
         List<Osoba> osobe = new ArrayList<>();
         Map<Bolest, List<Osoba>> osobeZarazeneVirusima = new HashMap<>();
+        File serijaliziraniVirusi = new File("dat/serijaliziraniVirus.dat");
+
+        // 1. zadatak - zadatak na vjezbi
+
+        if(serijaliziraniVirusi.exists()) {
+            System.out.println("Postoji");
+            try (ObjectInputStream in = new ObjectInputStream(
+                    new FileInputStream("dat/serijaliziraniVirus.dat")
+            )) {
+                while(true) {
+                    Virus mojVirus = (Virus)in.readObject();
+                    System.out.println(mojVirus.getId());
+                    System.out.println(mojVirus.getNaziv());
+                }
+            } catch(IOException ex) {
+                logger.error("Greska prilikom serijalizacije.", ex);
+            } catch (ClassNotFoundException exe) {
+                logger.error("Greska prilikom serijalizacije, klasa nije pronadjena.", exe);
+            }
+        }
+
+        // 2. zadatak - zadatak na vjezbi
+
+        File mojZapisani = new File("dat/mojZapis.txt");
+
+        try (
+                FileReader fileReader = new FileReader(mojZapisani);
+                BufferedReader reader = new BufferedReader(fileReader);
+        ) {
+
+            Integer suma = Integer.parseInt(reader.readLine());
+            Integer najdulji = Integer.parseInt(reader.readLine());
+            Integer najkraci = Integer.parseInt(reader.readLine());
+            Double prosjek = Double.parseDouble(reader.readLine());
+
+            System.out.println(suma);
+            System.out.println(najdulji);
+            System.out.println(najkraci);
+            System.out.println(prosjek);
+
+        } catch (IOException ex) {
+
+            logger.error("Ne mogu otvoriti datoteku.", ex);
+
+        } catch (NumberFormatException exe) {
+            logger.error("Ne mogu pretvoriti broj.", exe);
+        }
+
+
 
         // Unos Zupanija
 
@@ -113,6 +163,88 @@ public class Glavna {
         // Izvedba serijalizacije seste laboratorijske vjezbe
 
         serijalizacijaSestaVjezba(zupanije);
+
+        // 1. zadatak - zadatak na vjezbi
+
+        bolesti.stream().filter(e-> e instanceof Virus)
+                .filter(e ->
+                    (e.getNaziv().toLowerCase().charAt(0) == 'e') &&
+                    (e.getNaziv().toLowerCase().contains("bola"))
+                )
+                .forEach(e->{
+                    try (ObjectOutputStream serializator = new ObjectOutputStream(
+                            new FileOutputStream("dat/serijaliziraniVirus.dat")
+                    )) {
+                        System.out.println(e.getId());
+                        System.out.println(e.getNaziv());
+                        serializator.writeObject(e);
+                    } catch(IOException ex) {
+                        logger.error("Greska prilikom serijalizacije.", ex);
+                    }
+                });
+
+        // 2. zadatak - zadatak na vjezbi
+
+        // Unos id županija
+
+        File mojZapis = new File("dat/mojZapis.txt");
+
+        try (
+                FileWriter fileWriter = new FileWriter(mojZapis);
+                BufferedWriter writer = new BufferedWriter(fileWriter);
+        ) {
+
+            Integer suma = bolesti.stream()
+                    .filter(e -> e instanceof Virus)
+                    .map(e -> e.getNaziv().length())
+//                    .flatMapToInt(IntStream::of)
+                    .mapToInt(e->e)
+                    .sum();
+
+//            System.out.println(suma);
+
+            Integer najdulji = bolesti.stream()
+                    .filter(e -> e instanceof Virus)
+                    .map(e -> e.getNaziv().length())
+//                    .flatMapToInt(IntStream::of)
+                    .mapToInt(e->e)
+                    .max()
+                    .getAsInt();
+
+//            System.out.println(najdulji);
+
+            Integer najkraci = bolesti.stream()
+                    .filter(e -> e instanceof Virus)
+                    .map(e -> e.getNaziv().length())
+//                    .flatMapToInt(IntStream::of)
+                    .mapToInt(e->e)
+                    .min()
+                    .getAsInt();
+
+//            System.out.println(najkraci);
+
+            Double prosjek = bolesti.stream()
+                    .filter(e -> e instanceof Virus)
+                    .map(e -> e.getNaziv().length())
+//                    .flatMapToInt(IntStream::of)
+                    .mapToInt(e->e)
+                    .average()
+                    .getAsDouble();
+
+//            System.out.println(prosjek);
+
+            writer.write(String.valueOf(suma)+"\n");
+            writer.write(String.valueOf(najdulji)+"\n");
+            writer.write(String.valueOf(najkraci)+"\n");
+            writer.write(String.valueOf(prosjek)+"\n");
+
+
+
+        } catch (IOException ex) {
+
+            logger.error("Ne mogu kreirati datoteku.", ex);
+
+        }
 
     }
 
