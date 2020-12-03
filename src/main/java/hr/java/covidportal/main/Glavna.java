@@ -10,10 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.ls.LSOutput;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.Instant;
@@ -112,6 +109,37 @@ public class Glavna {
         // Izvedba pete laboratorijske vjezbe
 
         izvedbaPetogLabosa(bolesti, osobe, input);
+
+        zupanije.stream().forEach(e -> {
+            try (ObjectOutputStream serializator = new ObjectOutputStream(
+                    new FileOutputStream("dat/serijalizirani.dat")
+            )) {
+
+                BigDecimal brojZarazenih = new BigDecimal(e.getBrojZarazenih());
+                BigDecimal brojStanovnika = new BigDecimal(e.getBrojStanovnika());
+                BigDecimal postotakBrojaZarazenih = (brojZarazenih.divide(brojStanovnika))
+                        .multiply(new BigDecimal(100));
+
+                if(postotakBrojaZarazenih.compareTo(new BigDecimal(2)) > 0) {
+
+                    System.out.println("Serijaliziran");
+                    System.out.println(postotakBrojaZarazenih.toString());
+                    System.out.println(postotakBrojaZarazenih.compareTo(new BigDecimal(2)));
+                    System.out.println(e.getNaziv());
+
+                    serializator.writeObject(e);
+
+                } else {
+                    System.out.println("Nije Serijaliziran");
+                    System.out.println(postotakBrojaZarazenih.toString());
+                    System.out.println(postotakBrojaZarazenih.compareTo(new BigDecimal(2)));
+                    System.out.println(e.getNaziv());
+                }
+
+            } catch (IOException ex) {
+                logger.error("Greska prilikom serijalizacije.", ex);
+            }
+        });
 
     }
 

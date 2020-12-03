@@ -2,6 +2,7 @@ package main.java.hr.java.covidportal.model;
 
 import main.java.hr.java.covidportal.enumeracija.VrijednostSimptoma;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 /**
@@ -11,7 +12,7 @@ import java.util.Objects;
  * @version 1.0
  */
 
-public class Simptom extends ImenovaniEntitet {
+public class Simptom extends ImenovaniEntitet implements Serializable {
     private VrijednostSimptoma vrijednost;
 
     /**

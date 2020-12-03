@@ -3,6 +3,7 @@ package main.java.hr.java.covidportal.genericsi;
 import main.java.hr.java.covidportal.model.Osoba;
 import main.java.hr.java.covidportal.model.Virus;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -15,7 +16,7 @@ import java.util.List;
  * @param <S> Osoba ili klasa koja nasljeđuje klasu osoba
  */
 
-public class KlinikaZaInfektivneBolesti <T extends Virus, S extends Osoba> {
+public class KlinikaZaInfektivneBolesti <T extends Virus, S extends Osoba> implements Serializable {
     private List<T> uneseniVirusi;
     private List<S> osobeZarazeneUnesenimVirusima;
 

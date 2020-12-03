@@ -1,5 +1,6 @@
 package main.java.hr.java.covidportal.model;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 /**
@@ -9,7 +10,7 @@ import java.util.Objects;
  * @version 1.0
  */
 
-public class Zupanija extends ImenovaniEntitet {
+public class Zupanija extends ImenovaniEntitet implements Serializable {
     private Integer brojStanovnika, brojZarazenih;
 
     /**

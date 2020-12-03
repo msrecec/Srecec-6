@@ -1,5 +1,6 @@
 package main.java.hr.java.covidportal.model;
 
+import java.io.Serializable;
 import java.util.Objects;
 import java.util.Set;
 
@@ -10,7 +11,7 @@ import java.util.Set;
  * @version 1.0
  */
 
-public class Bolest extends ImenovaniEntitet {
+public class Bolest extends ImenovaniEntitet implements Serializable {
     private Set<Simptom> simptomi;
 
     /**

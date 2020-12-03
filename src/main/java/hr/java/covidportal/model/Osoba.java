@@ -1,5 +1,6 @@
 package main.java.hr.java.covidportal.model;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -12,7 +13,7 @@ import java.util.Objects;
  * @version 1.0
  */
 
-public class Osoba {
+public class Osoba implements Serializable {
 
 
     // Implementacija "Builder Pattern"
