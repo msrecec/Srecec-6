@@ -51,7 +51,7 @@ public class Glavna {
 
         unosZupanija(input, zupanije);
 
-        zupanije.stream().map(el-> el.getNaziv()).forEach(System.out::println);
+        // zupanije.stream().map(el-> el.getNaziv()).forEach(System.out::println);
 
         // Unos Simptoma
 
@@ -110,6 +110,13 @@ public class Glavna {
 
         izvedbaPetogLabosa(bolesti, osobe, input);
 
+        // Izvedba serijalizacije seste laboratorijske vjezbe
+
+        serijalizacijaSestaVjezba(zupanije);
+
+    }
+
+    private static void serijalizacijaSestaVjezba(SortedSet<Zupanija> zupanije) {
         zupanije.stream().forEach(e -> {
             try (ObjectOutputStream serializator = new ObjectOutputStream(
                     new FileOutputStream("dat/serijalizirani.dat")
@@ -122,25 +129,14 @@ public class Glavna {
 
                 if(postotakBrojaZarazenih.compareTo(new BigDecimal(2)) > 0) {
 
-                    System.out.println("Serijaliziran");
-                    System.out.println(postotakBrojaZarazenih.toString());
-                    System.out.println(postotakBrojaZarazenih.compareTo(new BigDecimal(2)));
-                    System.out.println(e.getNaziv());
-
                     serializator.writeObject(e);
 
-                } else {
-                    System.out.println("Nije Serijaliziran");
-                    System.out.println(postotakBrojaZarazenih.toString());
-                    System.out.println(postotakBrojaZarazenih.compareTo(new BigDecimal(2)));
-                    System.out.println(e.getNaziv());
                 }
 
             } catch (IOException ex) {
                 logger.error("Greska prilikom serijalizacije.", ex);
             }
         });
-
     }
 
     // Metoda izvedbe pete laboratorijske vjezbe
