@@ -10,6 +10,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.ls.LSOutput;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.Instant;
@@ -49,6 +53,8 @@ public class Glavna {
 
         unosZupanija(input, zupanije);
 
+        zupanije.stream().map(el-> el.getNaziv()).forEach(System.out::println);
+
         // Unos Simptoma
 
         unosSimptoma(input, simptomi);
@@ -56,6 +62,8 @@ public class Glavna {
         // Unos Bolesti
 
         unosBolesti(input, simptomi, bolesti);
+
+//        bolesti.stream().filter(e -> e.getNaziv().compareTo("COVID-19") == 0).map(el -> el.getSimptomi().size()).forEach(System.out::println);
 
         // Unos osoba
 
@@ -109,7 +117,7 @@ public class Glavna {
      * Izvodi sve zadatke navedene u petoj laboratorijskoj vjezbi
      *
      * @param bolesti unesene bolesti
-     * @param osobe uneseni ljudi oboljeli od bolesti
+     * @param osobe   uneseni ljudi oboljeli od bolesti
      */
 
     private static void izvedbaPetogLabosa(Set<Bolest> bolesti, List<Osoba> osobe, Scanner sc) {
@@ -117,25 +125,25 @@ public class Glavna {
         // Zadatak 2 - instanciranje klinike
 
         klinika = new KlinikaZaInfektivneBolesti(
-        bolesti
-            .stream()
-            .filter(el -> el instanceof Virus)
-            .collect(Collectors.toList()),
-        osobe
-            .stream()
-            .filter(el -> el.getZarazenBolescu() instanceof Virus)
-            .collect(Collectors.toList())
+                bolesti
+                        .stream()
+                        .filter(el -> el instanceof Virus)
+                        .collect(Collectors.toList()),
+                osobe
+                        .stream()
+                        .filter(el -> el.getZarazenBolescu() instanceof Virus)
+                        .collect(Collectors.toList())
         );
 
         // Sa lambda izrazima
 
         Instant start1 = Instant.now();
         List<Virus> sortiraniVirusi1 = klinika
-            .getUneseniVirusi()
-            .stream()
+                .getUneseniVirusi()
+                .stream()
 //            .sorted(Comparator.comparing(Virus::getNaziv).reversed()) // ovo je kao "lijepa lambda" ali nije isti algoritam kao i u trećem zadatku jer radimo reverse i sort posebno
-            .sorted((e1,e2)->e2.getNaziv().compareTo(e1.getNaziv())) // ima vise smisla jer radimo samo compare između drugog i prvog koji daje obrnut poredak
-            .collect(Collectors.toList());
+                .sorted((e1, e2) -> e2.getNaziv().compareTo(e1.getNaziv())) // ima vise smisla jer radimo samo compare između drugog i prvog koji daje obrnut poredak
+                .collect(Collectors.toList());
         Instant end1 = Instant.now();
 
         System.out.println("Virusi sortirani po nazivu suprotno od poretka abecede: ");
@@ -159,9 +167,9 @@ public class Glavna {
         Instant end2 = Instant.now();
 
         System.out.println("Sortiranje objekata korištenjem lambdi traje "
-                + Duration.between(start1,end1)
+                + Duration.between(start1, end1)
                 + " milisekundi, a bez lambdi traje "
-                + Duration.between(start2,end2)
+                + Duration.between(start2, end2)
                 + " milisekundi");
 
         System.out.print("Unesite string za pretragu po prezimenu: ");
@@ -177,14 +185,14 @@ public class Glavna {
 
         Optional.ofNullable(
                 osobe
-                    .stream()
-                    .filter(el->el.getPrezime().contains(nekoPrezime))
-                    .collect(Collectors.toList()).isEmpty() ?
+                        .stream()
+                        .filter(el -> el.getPrezime().contains(nekoPrezime))
+                        .collect(Collectors.toList()).isEmpty() ?
                         null :
                         osobe
-                            .stream()
-                            .filter(el->el.getPrezime().contains(nekoPrezime))
-                            .collect(Collectors.toList())
+                                .stream()
+                                .filter(el -> el.getPrezime().contains(nekoPrezime))
+                                .collect(Collectors.toList())
         ).ifPresentOrElse(
                 el -> el.stream().map(ele -> ele.getIme() + " " + ele.getPrezime()).forEach(System.out::println),
                 () -> System.out.println("Lista je prazna")
@@ -203,9 +211,9 @@ public class Glavna {
 //        nekaOsoba.stream().map(el->el.getIme()).forEach(System.out::println);
 
         bolesti
-            .stream()
-            .map(el->el.getNaziv() + " ima " + el.getSimptomi().size() + " simptoma")
-            .forEach(System.out::println);
+                .stream()
+                .map(el -> el.getNaziv() + " ima " + el.getSimptomi().size() + " simptoma")
+                .forEach(System.out::println);
     }
 
 
@@ -290,149 +298,48 @@ public class Glavna {
      */
 
     private static void unosZupanija(Scanner input, SortedSet<Zupanija> zupanije) {
+        File unosZupanija = new File("dat/zupanije.txt");
+        String procitanaLinija;
+        Long idZupanije;
         String nazivZupanije;
-        Long id = null;
-        int brojStanovnika = 0, brojZupanija = 0, brojZarazenih = 0;
-        boolean ispravanUnos = true;
+        int brojStanovnika = 0, brojZarazenih = 0;
 
-        // Unos broja županija i validacija unosa
+        // Unos id županija
 
-        do {
+        try (
+                FileReader filereader = new FileReader(unosZupanija);
+                BufferedReader reader = new BufferedReader(filereader);
+        ) {
 
-            try {
+            while ((procitanaLinija = reader.readLine()) != null) {
 
-                System.out.printf("Unesite broj županija koje želite unijeti: ");
+                idZupanije = Long.parseLong(procitanaLinija);
 
-                brojZupanija = input.nextInt();
+                logger.info("Unesen je id županija: " + idZupanije);
 
-                input.nextLine();
+                nazivZupanije = reader.readLine();
 
-                if (brojZupanija < 1) {
+                logger.info("Unesen je naziv zupanije: " + nazivZupanije);
 
-                    System.out.println("Pogrešan unos! Molimo unesite broj veci od 1.");
+                brojStanovnika = Integer.parseInt(reader.readLine());
 
-                    logger.error("Prilikom unosa broja županija unesen je negativan broj.");
+                logger.info("Unesen je broj stanovnika: " + brojStanovnika);
 
-                    ispravanUnos = false;
+                brojZarazenih = Integer.parseInt(reader.readLine());
 
-                } else {
+                logger.info("Unesen je broj zaraženih stanovnika: " + brojZarazenih);
 
-                    logger.info("Unesen je broj županija: " + Integer.toString(brojZupanija));
-
-                    ispravanUnos = true;
-
-                }
-
-            } catch (InputMismatchException ex) {
-
-                logger.error("Prilikom unosa broja županija je došlo do pogreške. Unesen je String koji se ne može parsirati!", ex);
-
-                System.out.println("Došlo je do pogreške kod unosa brojčane vrijednosti! Molimo ponovite unos.");
-
-                input.nextLine();
-
-                ispravanUnos = false;
+                zupanije.add(new Zupanija(idZupanije, nazivZupanije, brojStanovnika, brojZarazenih));
 
             }
 
-        } while (!ispravanUnos);
+        } catch (IOException ex) {
 
+            logger.error("Ne mogu pronaci datoteku.", ex);
 
-        // Unos županija
+        } catch (NumberFormatException  exe) {
 
-        System.out.printf("Unesite podatke o %d zupanije:%n", brojZupanija);
-        for (int i = 0; i < brojZupanija; ++i) {
-
-            // Unos naziva županija
-
-            System.out.printf("Unesite naziv zupanije: ");
-
-            nazivZupanije = input.nextLine();
-
-            // Unos i validacija unosa broja stanovnika
-
-            do {
-
-                try {
-
-                    System.out.printf("Unesite broj stanovnika: ");
-
-                    brojStanovnika = input.nextInt();
-
-                    input.nextLine();
-
-                    if (brojStanovnika < 0) {
-
-                        System.out.println("Pogrešan unos! Molimo unesite pozitivan cijeli broj.");
-
-                        logger.error("Prilikom unosa broja stanovnika unesen je negativan broj.");
-
-                        ispravanUnos = false;
-
-                    } else {
-
-                        logger.info("Unesen je broj stanovnika: " + Integer.toString(brojStanovnika));
-
-                        ispravanUnos = true;
-
-                    }
-
-
-                } catch (InputMismatchException ex) {
-
-                    logger.error("Prilikom unosa broja stanovnika je došlo do pogreške. Unesen je String koji se ne može parsirati!", ex);
-
-                    System.out.println("Došlo je do pogreške kod unosa brojčane vrijednosti! Molimo ponovite unos.");
-
-                    input.nextLine();
-
-                    ispravanUnos = false;
-                }
-            } while (!ispravanUnos);
-
-            // Unos i validacija broja zaraženih osoba
-
-            do {
-
-                try {
-
-                    System.out.printf("Unesite broj zaraženih stanovnika: ");
-
-                    brojZarazenih = input.nextInt();
-
-                    input.nextLine();
-
-                    if (brojZarazenih < 0) {
-
-                        System.out.println("Pogrešan unos! Molimo unesite pozitivan cijeli broj.");
-
-                        logger.error("Prilikom unosa broja zaraženih stanovnika unesen je negativan broj.");
-
-                        ispravanUnos = false;
-
-                    } else {
-
-                        logger.info("Unesen je broj zaraženih stanovnika: " + Integer.toString(brojZupanija));
-
-                        ispravanUnos = true;
-
-                    }
-
-                } catch (InputMismatchException ex) {
-
-                    logger.error("Prilikom unosa broja zaraženih stanovnika je došlo do pogreške. Unesen je String koji se ne može parsirati!", ex);
-
-                    System.out.println("Došlo je do pogreške kod unosa brojčane vrijednosti! Molimo ponovite unos.");
-
-                    input.nextLine();
-
-                    ispravanUnos = false;
-
-                }
-
-            } while (!ispravanUnos);
-
-            zupanije.add(new Zupanija(id, nazivZupanije, brojStanovnika, brojZarazenih));
+            logger.error("Greska prilikom citanja broja!", exe);
 
         }
     }
@@ -451,105 +358,55 @@ public class Glavna {
      */
 
     private static void unosSimptoma(Scanner input, Set<Simptom> simptomi) {
-        Long id = null;
+        File unosSimptoma = new File("dat/simptomi.txt");
+        String procitanaLinija;
+        Long idSimptoma;
         String nazivSimptoma;
         String vrijednostSimptoma;
-        int brojSimptoma = 0;
-        boolean ispravanUnos = true;
 
         // Unos broja simptoma i validacija unosa
 
-        do {
+        try (
+                FileReader filereader = new FileReader(unosSimptoma);
+                BufferedReader reader = new BufferedReader(filereader);
+        ) {
 
-            try {
+            while ((procitanaLinija = reader.readLine()) != null) {
 
-                System.out.printf("Unesite broj simptoma koje želite unijeti: ");
+                idSimptoma = Long.parseLong(procitanaLinija);
 
-                brojSimptoma = input.nextInt();
+                logger.info("Unesen je id simptoma: " + idSimptoma);
 
-                input.nextLine();
+                nazivSimptoma = reader.readLine();
 
-                if (brojSimptoma < 0) {
+                logger.info("Unesen je naziv simptoma: " + nazivSimptoma);
 
-                    System.out.println("Pogrešan unos! Molimo unesite pozitivan cijeli broj.");
+                vrijednostSimptoma = reader.readLine();
 
-                    logger.error("Prilikom unosa broja simptoma unesen je negativan broj.");
+                logger.info("Unesena je vrijednost simptoma: " + vrijednostSimptoma);
 
-                    ispravanUnos = false;
+                // Dodavanje Simptoma Ovisno o Vrijednosti
 
-                } else {
-
-                    logger.info("Unesen je broj simptoma: " + Integer.toString(brojSimptoma));
-
-                    ispravanUnos = true;
-
-                }
-
-            } catch (InputMismatchException ex) {
-
-                logger.error("Prilikom unosa broja simptoma je došlo do pogreške. Unesen je String koji se ne može parsirati!", ex);
-
-                System.out.println("Došlo je do pogreške kod unosa brojčane vrijednosti! Molimo ponovite unos.");
-
-                input.nextLine();
-
-                ispravanUnos = false;
+                simptomi.add(new Simptom(idSimptoma, nazivSimptoma,
+                        vrijednostSimptoma.equals(VrijednostSimptoma.RIJETKO.getVrijednost()) ?
+                                VrijednostSimptoma.RIJETKO :
+                                vrijednostSimptoma.equals(VrijednostSimptoma.SREDNJE.getVrijednost()) ?
+                                        VrijednostSimptoma.SREDNJE :
+                                        VrijednostSimptoma.CESTO
+                ));
 
             }
 
-        } while (!ispravanUnos);
+        } catch (IOException ex) {
 
-        // Unos simptoma
+            logger.error("Ne mogu pronaci datoteku.", ex);
 
-        System.out.printf("Unesite podatke o %d simptoma:%n", brojSimptoma);
+        } catch (NumberFormatException  exe) {
 
-        for (int i = 0; i < brojSimptoma; ++i) {
-
-            // Unos naziva simptoma
-
-            System.out.printf("Unesite naziv simptoma: ");
-
-            nazivSimptoma = input.nextLine();
-
-            // Unos i validacija unosa vrijednosti simptoma
-
-            do {
-
-                System.out.printf("Unesite vrijednost simptoma(%s, %s, %s): ",
-                        VrijednostSimptoma.RIJETKO.getVrijednost(),
-                        VrijednostSimptoma.SREDNJE.getVrijednost(),
-                        VrijednostSimptoma.CESTO.getVrijednost());
-                vrijednostSimptoma = input.nextLine();
-
-                // if(!vrijednostSimptoma.in([RIJETKO, SREDNJE, CESTO])) Provjera pojave vrijednosti simptoma analogno IN Operatoru u SQL
-
-                if (!Arrays.asList(VrijednostSimptoma.RIJETKO.getVrijednost(),
-                        VrijednostSimptoma.SREDNJE.getVrijednost(),
-                        VrijednostSimptoma.CESTO.getVrijednost())
-                        .contains(vrijednostSimptoma)) {
-
-                    System.out.println("Pogrešan unos simptoma !");
-
-                    logger.error("Prilikom unosa pojave vrijednosti simptoma je broj izvan raspona dopuštenih vrijednosti.");
-
-                }
-
-            } while (!Arrays.asList(VrijednostSimptoma.RIJETKO.getVrijednost(),
-                    VrijednostSimptoma.SREDNJE.getVrijednost(),
-                    VrijednostSimptoma.CESTO.getVrijednost())
-                    .contains(vrijednostSimptoma));
-
-            // Dodavanje Simptoma Ovisno o Vrijednosti
-
-            simptomi.add(new Simptom(id, nazivSimptoma,
-                    vrijednostSimptoma.equals(VrijednostSimptoma.RIJETKO.getVrijednost()) ?
-                            VrijednostSimptoma.RIJETKO :
-                            vrijednostSimptoma.equals(VrijednostSimptoma.SREDNJE.getVrijednost()) ?
-                                    VrijednostSimptoma.SREDNJE :
-                                    VrijednostSimptoma.CESTO
-            ));
+            logger.error("Greska prilikom citanja broja!", exe);
 
         }
+
     }
 
     /**
@@ -582,294 +439,149 @@ public class Glavna {
      */
 
     private static void unosBolesti(Scanner input, Set<Simptom> simptomi, Set<Bolest> bolesti) {
-        Long id = null;
-        String nazivBolestiIliVirusa;
-        int brojOdabranihSimptoma = 0, odabraniSimptom;
-        Set<Simptom> odabraniSimptomi;
-        int bolestIliVirus = 0, brojBolesti = 0, brojVirusa = 0;
-        boolean ispravanUnos;
-
-        // Unos broja bolesti i validacija unosa
-
-        do {
-
-            try {
-
-                System.out.printf("Unesite broj bolesti koje želite unijeti: ");
-
-                brojBolesti = input.nextInt();
-
-                input.nextLine();
-
-                if (brojBolesti < 0) {
-
-                    System.out.println("Pogrešan unos! Molimo unesite pozitivan cijeli broj.");
-
-                    logger.error("Prilikom unosa broja bolesti unesen je negativan broj.");
-
-                    ispravanUnos = false;
-
-                } else {
-
-                    logger.info("Unesen je broj bolesti: " + Integer.toString(brojBolesti));
-
-                    ispravanUnos = true;
-
-                }
-
-            } catch (InputMismatchException ex) {
-
-                logger.error("Prilikom unosa broja bolesti je došlo do pogreške. Unesen je String koji se ne može parsirati!", ex);
-
-                System.out.println("Došlo je do pogreške kod unosa brojčane vrijednosti! Molimo ponovite unos.");
-
-                input.nextLine();
-
-                ispravanUnos = false;
-
-            }
-
-        } while (!ispravanUnos);
-
-        // Unos broja virusa i validacija unosa
-
-        do {
-
-            try {
-
-                System.out.printf("Unesite broj virusa koje želite unijeti: ");
-
-                brojVirusa = input.nextInt();
-
-                input.nextLine();
-
-                if (brojVirusa < 0) {
-
-                    System.out.println("Pogrešan unos! Molimo unesite pozitivan cijeli broj.");
-
-                    logger.error("Prilikom unosa broja virusa unesen je negativan broj.");
-
-                    ispravanUnos = false;
-
-                } else {
-
-                    logger.info("Unesen je broj virusa: " + Integer.toString(brojVirusa));
-
-                    ispravanUnos = true;
-
-                }
-
-            } catch (InputMismatchException ex) {
-
-                logger.error("Prilikom unosa broja virusa je došlo do pogreške. Unesen je String koji se ne može parsirati!", ex);
-
-                System.out.println("Došlo je do pogreške kod unosa brojčane vrijednosti! Molimo ponovite unos.");
-
-                input.nextLine();
-
-                ispravanUnos = false;
-
-            }
-
-        } while (!ispravanUnos);
+        File unosBolesti = new File("dat/bolesti.txt");
+        File unosVirusa = new File("dat/virusi.txt");
+        String procitanaLinija;
+        Long idBolesti, idVirusa;
+        String nazivBolesti, nazivVirusa;
 
 
-        System.out.printf("Unesite podatke o %d bolesti ili virusa:%n", brojBolesti + brojVirusa);
 
-        for (int i = 0; i < brojBolesti + brojVirusa; ++i) {
+        try (
+                FileReader filereader = new FileReader(unosBolesti);
+                BufferedReader reader = new BufferedReader(filereader);
+        ) {
 
-            // Odabir unosa bolesti ili virusa i validacija unosa
+            while ((procitanaLinija = reader.readLine()) != null) {
 
-            do {
+                Set<Simptom> odabraniSimptomi = new HashSet<>();
 
-                try {
+                idBolesti = Long.parseLong(procitanaLinija);
 
-                    System.out.printf("Unosite li bolest ili virus ?%n1)BOLEST%n2)VIRUS%n");
+                logger.info("Unesen je id simptoma: " + idBolesti);
 
-                    bolestIliVirus = input.nextInt();
+                nazivBolesti = reader.readLine();
 
-                    input.nextLine();
+                logger.info("Unesen je naziv bolesti: " + nazivBolesti);
 
-                    if (bolestIliVirus != 1 && bolestIliVirus != 2) {
+                Arrays.stream(reader.readLine().split(",")).forEach(el -> {
 
-                        System.out.println("Pogresan unos! Molimo unesite jedan od ponuđenih brojeva.");
+                    // Iteracija simptoma po indeksu
 
-                        logger.error("Prilikom unosa Bolesti ili Virusa unesen je broj izvan raspona dopuštenih brojeva.");
+                    int element = Integer.parseInt(el);
 
-                        ispravanUnos = false;
+                    Simptom simptom;
 
-                    } else {
+                    Iterator<Simptom> iteratorSimptoma = simptomi.iterator();
+                    Simptom pronadeniOdabraniSimptom = null;
 
-                        logger.info((bolestIliVirus == 1 ? "Unesena je  Bolest: " : "Unesen je Virus: ")
-                                + Integer.toString(bolestIliVirus));
-
-                        ispravanUnos = true;
-
+                    for (int k = 0; k < simptomi.size() && iteratorSimptoma.hasNext(); ++k) {
+                        simptom = iteratorSimptoma.next();
+                        if (k == (element - 1)) {
+                            pronadeniOdabraniSimptom = simptom;
+                        }
                     }
 
-                } catch (InputMismatchException ex) {
+                    odabraniSimptomi.add(pronadeniOdabraniSimptom);
 
-                    logger.error("Prilikom unosa bolesti ili virusa je došlo do pogreške. Unesen je String koji se ne može parsirati!", ex);
-
-                    System.out.println("Došlo je do pogreške kod unosa brojčane vrijednosti! Molimo ponovite unos.");
-
-                    input.nextLine();
-
-                    ispravanUnos = false;
-                }
-
-            } while (!ispravanUnos);
-
-            do {
-
-                // Ponovna inicijalizacija seta odabranih simptoma
-
-                odabraniSimptomi = new HashSet<>();
-
-                // Unos Bolesti ili Virusa
-
-                System.out.printf("Unesite naziv bolesti ili virusa: ");
-
-                nazivBolestiIliVirusa = input.nextLine();
-
-                // Unos Broja Odabranih Simptoma i validacija unosa
-
-                do {
-
-                    try {
-                        System.out.printf("Unesite broj simptoma: ");
-
-                        brojOdabranihSimptoma = input.nextInt();
-
-                        input.nextLine();
-
-                        if (brojOdabranihSimptoma > simptomi.size() || brojOdabranihSimptoma < 1) {
-
-                            System.out.println("Pogresan unos broja simptoma ! Unesen je broj izvan raspona ukupnog broja mogućih simptoma.");
-
-                            logger.error("Prilikom unosa broja simptoma unesen je broj izvan raspona ukupnog broja mogućih simptoma.");
-
-                            ispravanUnos = false;
-
-                        } else {
-
-                            logger.info("Uneseni broj simptoma: " + Integer.toString(brojOdabranihSimptoma));
-
-                            ispravanUnos = true;
-
-                        }
-
-                    } catch (InputMismatchException ex) {
-
-                        logger.error("Prilikom unosa broja simptoma je došlo do pogreške. Unesen je String koji se ne može parsirati!", ex);
-
-                        System.out.println("Došlo je do pogreške kod unosa brojčane vrijednosti! Molimo ponovite unos.");
-
-                        input.nextLine();
-
-                        ispravanUnos = false;
-                    }
-
-                } while (!ispravanUnos);
-
-                // Unos odabranih simptoma i validacija
-
-                for (int j = 0; j < brojOdabranihSimptoma; ++j) {
-
-                    // Biranje Postojeceg Simptoma i validacija unosa
-
-                    do {
-
-                        System.out.printf("Odaberite %d. simptom:%n", j + 1);
-
-                        // Ispis Postojecih Simptoma
-
-                        Iterator<Simptom> iteratorSimptoma = simptomi.iterator();
-                        Simptom simptom;
-
-                        for (int k = 0; k < simptomi.size() && iteratorSimptoma.hasNext(); ++k) {
-                            simptom = iteratorSimptoma.next();
-                            System.out.printf("%d. %s %s%n", k + 1, simptom.getNaziv(), simptom.getVrijednost().getVrijednost());
-                        }
-
-                        try {
-
-                            System.out.print("Odabir: ");
-
-                            odabraniSimptom = input.nextInt();
-
-                            input.nextLine();
-
-                            if (odabraniSimptom > simptomi.size() || odabraniSimptom < 1) {
-
-                                System.out.println("Neispravan unos, molimo pokusajte ponovno!");
-
-                                logger.error("Prilikom biranja simptoma unesen je broj izvan raspona ukupnog broja postojećih simptoma.");
-
-                                ispravanUnos = false;
-
-                            } else {
-
-                                // Iteracija simptoma po indeksu
-
-                                ispravanUnos = true;
-
-                                iteratorSimptoma = simptomi.iterator();
-                                Simptom pronadeniOdabraniSimptom = null;
-
-                                for (int k = 0; k < simptomi.size() && iteratorSimptoma.hasNext(); ++k) {
-                                    simptom = iteratorSimptoma.next();
-                                    if (k == (odabraniSimptom - 1)) {
-                                        pronadeniOdabraniSimptom = simptom;
-                                    }
-                                }
-
-                                logger.info("Odabran je (broj) simptom is postojećih simptoma: " + Integer.toString(odabraniSimptom));
-
-                                odabraniSimptomi.add(pronadeniOdabraniSimptom);
-
-                            }
-                        } catch (InputMismatchException ex) {
-
-                            logger.error("Prilikom unosa brojčane vrijednosti kod biranja postojećih simptoma je došlo do pogreške. Unesen je String koji se ne može parsirati!", ex);
-
-                            System.out.println("Došlo je do pogreške kod unosa brojčane vrijednosti! Molimo ponovite unos.");
-
-                            input.nextLine();
-
-                            ispravanUnos = false;
-
-                        }
-
-                    } while (!ispravanUnos);
-                }
+                } );
 
                 // Provjera duplikata unosa Simptoma
 
                 if (bolesti.size() > 0) {
 
-                    try {
-
-                        provjeraBolestiIstihSimptoma(bolesti, odabraniSimptomi);
-
-                        ispravanUnos = true;
-
-                    } catch (BolestIstihSimptoma ex) {
-
-                        logger.error(ex.getMessage(), ex);
-
-                        ispravanUnos = false;
-
-                    }
+                    provjeraBolestiIstihSimptoma(bolesti, odabraniSimptomi);
 
                 }
 
-            } while (!ispravanUnos);
+                // Provjera da li je unos bolest ili virus i unos u polje bolesti
 
-            // Provjera da li je unos bolest ili virus i unos u polje bolesti
+                bolesti.add(new Bolest(idBolesti, nazivBolesti, odabraniSimptomi));
 
-            bolesti.add(bolestIliVirus == 1 ? new Bolest(id, nazivBolestiIliVirusa, odabraniSimptomi) : new Virus(id, nazivBolestiIliVirusa, odabraniSimptomi));
+            }
+
+        } catch (IOException ex) {
+
+            logger.error("Ne mogu pronaci datoteku.", ex);
+
+        } catch (NumberFormatException  exe) {
+
+            logger.error("Greska prilikom citanja broja!", exe);
+
+        }  catch (BolestIstihSimptoma exc) {
+
+            logger.error(exc.getMessage(), exc);
+
         }
+
+
+        try (
+                FileReader filereader = new FileReader(unosVirusa);
+                BufferedReader reader = new BufferedReader(filereader);
+        ) {
+
+            while ((procitanaLinija = reader.readLine()) != null) {
+
+                Set<Simptom> odabraniSimptomi = new HashSet<>();
+
+                idVirusa = Long.parseLong(procitanaLinija);
+
+                logger.info("Unesen je id simptoma: " + idVirusa);
+
+                nazivVirusa = reader.readLine();
+
+                logger.info("Unesen je naziv virusa: " + nazivVirusa);
+
+                Arrays.stream(reader.readLine().split(",")).forEach(el -> {
+
+                    // Iteracija simptoma po indeksu
+
+                    int element = Integer.parseInt(el);
+
+                    Simptom simptom;
+
+                    Iterator<Simptom> iteratorSimptoma = simptomi.iterator();
+                    Simptom pronadeniOdabraniSimptom = null;
+
+                    for (int k = 0; k < simptomi.size() && iteratorSimptoma.hasNext(); ++k) {
+                        simptom = iteratorSimptoma.next();
+                        if (k == (element - 1)) {
+                            pronadeniOdabraniSimptom = simptom;
+                        }
+                    }
+
+                    odabraniSimptomi.add(pronadeniOdabraniSimptom);
+
+                } );
+
+                // Provjera duplikata unosa Simptoma
+
+                if (bolesti.size() > 0) {
+
+                    provjeraBolestiIstihSimptoma(bolesti, odabraniSimptomi);
+
+                }
+
+                // Provjera da li je unos bolest ili virus i unos u polje bolesti
+
+                bolesti.add(new Bolest(idVirusa, nazivVirusa, odabraniSimptomi));
+
+            }
+
+        } catch (IOException ex) {
+
+            logger.error("Ne mogu pronaci datoteku.", ex);
+
+        } catch (NumberFormatException  exe) {
+
+            logger.error("Greska prilikom citanja broja!", exe);
+
+        }  catch (BolestIstihSimptoma exc) {
+
+            logger.error(exc.getMessage(), exc);
+
+        }
+
     }
 
     /**

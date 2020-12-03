@@ -36,6 +36,14 @@ public class CovidSorter implements Comparator<Zupanija> {
             return 1;
         } else if (prviPostotakBrojaZarazenih.compareTo(drugiPostotakBrojaZarazenih) < 0) {
             return -1;
+        } else if (prviBrojStanovnika.compareTo(drugiBrojStanovnika) > 0) {
+            return 1;
+        } else if (prviBrojStanovnika.compareTo(drugiBrojStanovnika) < 0) {
+            return -1;
+        } else if (prviBrojZarazenih.compareTo(drugiBrojZarazenih) > 0) {
+            return 1;
+        } else if (prviBrojZarazenih.compareTo(drugiBrojZarazenih) < 0) {
+            return -1;
         } else {
             return 0;
         }
